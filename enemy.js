@@ -31,6 +31,10 @@ class Enemy {
         this.y += 5;
       }
 
+      // forces enmies to always stay fully on the screen
+      if (this.x > this.game.width - this.width) {
+        this.x = this.game.width - this.width;
+      }
 
       this.x += this.speedX;
       this.y += this.speedY;
