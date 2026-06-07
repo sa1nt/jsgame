@@ -5,9 +5,12 @@ class Game {
     this.width = this.canvas.width;
     this.height = this.canvas.height;
 
-    this.enemy1 = new Enemy(this);
-    this.enemy2 = new Enemy(this);
-    this.enemy3 = new Enemy(this);
+    this.enemyPool = [];
+    this.numberOfEnemies = 50;
+
+    this.createEnemyPool();
+    this.enemyTimer = 0;
+    this.enemyInterval = 1000;
 
     this.start();
 
@@ -28,13 +31,42 @@ class Game {
     this.height = height;
   }
 
-  render() {
-    this.enemy1.update();
-    this.enemy1.draw();
-    this.enemy2.update();
-    this.enemy2.draw();
-    this.enemy3.update();
-    this.enemy3.draw();
+  createEnemyPool() {
+    for (let i = 0; i < this.numberOfEnemies; i++) {
+      const e = new Enemy(this);
+      this.enemyPool.push(e);
+    }
+  }
+
+  getEnemy() {
+    for (let i = 0; i < this.enemyPool.length; i++) {
+      if (!this.enemyPool[i].active) {
+        return this.enemyPool[i];
+      }
+    }
+    return null;
+  }
+
+  handleEnemies(deltaTime) {
+    let enemy = null;
+    if (this.enemyTimer < this.enemyInterval) {
+      this.enemyTimer += deltaTime;
+    } else {
+      this.enemyTimer = 0;
+      enemy = this.getEnemy();
+    }
+
+    if (enemy) {
+      enemy.start();
+    }
+  }
+
+  render(deltaTime) {
+    this.handleEnemies(deltaTime);
+    this.enemyPool.forEach(enemy => {
+      enemy.update();
+      enemy.draw();
+    });
   }
 }
 
@@ -46,9 +78,14 @@ window.addEventListener('load', function() {
 
   const game = new Game(canvas, ctx);
 
-  function animate() {
+  let lastTime = 0;
+
+  function animate(timeStamp) {
+    const deltaTime = timeStamp - lastTime;
+    lastTime = timeStamp;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    game.render(ctx);
+    game.render(deltaTime);
     window.requestAnimationFrame(animate);
   }
   animate();
