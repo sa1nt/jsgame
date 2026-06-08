@@ -5,11 +5,13 @@ class Enemy {
     this.width = 50;
     this.height = 50;
 
-    this.x = Math.random() * this.game.width;
-    this.y = -this.height;
+    this.x;
+    this.y;
 
     this.speedX = 0;
-    this.speedY = Math.random() * 4 + 1;
+    this.speedY = Math.random() * 2 + 1;
+
+    this.lives;
 
     this.active = false;
   }
@@ -17,11 +19,16 @@ class Enemy {
   start() {
     this.x = Math.random() * this.game.width;
     this.y = -this.height;
+    this.lives = 2;
     this.active = true;
   }
 
   reset() {
     this.active = false;
+  }
+
+  isAlive() {
+    return this.lives > 0;
   }
 
   update() {
@@ -39,16 +46,30 @@ class Enemy {
       this.x += this.speedX;
       this.y += this.speedY;
 
+      // check collision
+      if (this.game.checkCollision(this, this.game.mouse) 
+          && this.game.mouse.pressed
+          && !this.game.mouse.fired) {
+        this.lives--;
+        this.game.mouse.fired = true;
+      }
+      if (!this.isAlive()) {
+        this.reset();
+        this.game.score++;
+      }
+
       if (this.y > this.game.height) {
         this.reset();
+        this.game.playerLives--;
       }
     }
   }
 
   draw() {
     if (this.active) {
-      this.game.ctx.fillStyle = 'red';
-      this.game.ctx.fillRect(this.x, this.y, this.width, this.height);
+      this.game.ctx.strokeRect(this.x, this.y, this.width, this.height);
+
+      this.game.ctx.fillText(this.lives, this.x + this.width * 0.5, this.y + this.height * 0.5);
     }
   }
 }
